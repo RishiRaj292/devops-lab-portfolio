@@ -1,0 +1,40 @@
+#include <tunables/global>
+
+profile my-apparmor-profile flags=(attach_disconnected,mediate_deleted) {
+    #include <abstractions/base>
+
+    # Permit the Python interpreter and its libraries
+    /usr/local/bin/python* ix,
+    /usr/local/lib/** mr,
+    /lib/** mr,
+    /lib64/** mr,
+    /usr/lib/** mr,
+
+    # Permit the application to use its own files
+    /app/ rw,
+    /app/** rwk,
+    /tmp/ rw,
+    /tmp/** rw,
+
+    # Basic runtime access
+    /dev/null rw,
+    /dev/zero r,
+    /dev/urandom r,
+    /proc/** r,
+
+    # Flask networking
+    network inet stream,
+    network inet dgram,
+    capability net_bind_service,
+
+    # Restrictions required by the assignment
+    deny /etc/** r,
+    deny /var/** rw,
+    deny /bin/** rm,
+    deny /bin/** x,
+    deny /bin/bash x,
+    deny /usr/bin/** rm,
+    deny /usr/bin/** x,
+    deny /usr/bin/bash x,
+    deny capability sys_admin,
+}

@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*secret*.yaml
+*secret*.yml
+
+# Logs and generated output
+*.log
+logs/
+.DS_Store
+Thumbs.db
+
+# JavaScript / Node (if needed by a task)
+node_modules/
+npm-debug.log*
+
+# Build and infrastructure state
+build/
+dist/
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Local Kubernetes config
+.kube/
+
+# Large ML checkpoints / model artifacts; track selectively if required
+*.pt
+*.pth
+*.ckpt
+*.safetensors

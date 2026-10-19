@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+    environment {
+        APP_DIR = 'exercises/09-jenkins-multi-stage-pipeline'
+    }
+    stages {
+        stage('Build') {
+            steps {
+                dir("${APP_DIR}") {
+                    sh 'python3 -m venv .venv'
+                    sh '.venv/bin/pip install --upgrade pip'
+                    sh '.venv/bin/pip install -r requirements.txt'
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                dir("${APP_DIR}") {
+                    sh '.venv/bin/python -m unittest discover -s . -p "test_*.py" -v'
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                dir("${APP_DIR}") {
+                    sh 'mkdir -p python-app-deploy'
+                    sh 'cp app.py requirements.txt python-app-deploy/'
+                }
+            }
+        }
+        stage('Run Application') {
+            steps {
+                dir("${APP_DIR}") {
+                    sh 'nohup .venv/bin/python python-app-deploy/app.py > python-app-deploy/app.log 2>&1 & echo $! > python-app-deploy/app.pid'
+                }
+            }
+        }
+        stage('Test Application') {
+            steps {
+                dir("${APP_DIR}") {
+                    sh '.venv/bin/python -m unittest discover -s . -p "test_*.py" -v'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            dir("${APP_DIR}") {
+                sh 'if [ -f python-app-deploy/app.pid ]; then kill "$(cat python-app-deploy/app.pid)" 2>/dev/null || true; fi'
+            }
+        }
+        success { echo 'Pipeline completed successfully!' }
+        failure { echo 'Pipeline failed. Check the logs for more details.' }
+    }
+}

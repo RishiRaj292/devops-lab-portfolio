@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  delivery-metrics:
+    build: .
+    image: delivery-metrics:latest
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
+  prometheus:
+    build: ./prometheus
+    image: delivery-prometheus:latest
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    depends_on:
+      - delivery-metrics
+
+  grafana:
+    build: ./grafana
+    image: delivery-grafana:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  grafana_data:

@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+    stages {
+        stage('Pre-check Docker') {
+            steps {
+                sh 'docker --version'
+                sh 'docker-compose --version'
+            }
+        }
+        stage('Install Dependencies and Test') {
+            steps {
+                dir('exercises/06-grafana-realtime-monitoring') {
+                    sh 'python3 -m venv .venv-ci'
+                    sh '.venv-ci/bin/pip install -r requirements.txt'
+                    sh '.venv-ci/bin/python -m unittest -v test_delivery_metrics.py'
+                }
+            }
+        }
+        stage('Build and Start Monitoring Stack') {
+            steps {
+                sh 'docker-compose -f exercises/06-grafana-realtime-monitoring/compose.yaml up -d --build'
+            }
+        }
+        stage('Verify Services') {
+            steps {
+                sh 'docker-compose -f exercises/06-grafana-realtime-monitoring/compose.yaml ps'
+            }
+        }
+    }
+    post {
+        failure {
+            sh 'docker-compose -f exercises/06-grafana-realtime-monitoring/compose.yaml logs --tail=80 || true'
+        }
+        success {
+            echo 'Delivery monitoring pipeline completed.'
+        }
+    }
+}
